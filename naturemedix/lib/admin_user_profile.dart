@@ -2,25 +2,25 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AdminProfile extends StatefulWidget {
-  const AdminProfile({super.key});
+class UserProfile extends StatefulWidget {
+  const UserProfile({super.key});
 
   @override
-  _AdminProfileState createState() => _AdminProfileState();
+  _UserProfileState createState() => _UserProfileState();
 }
 
-class _AdminProfileState extends State<AdminProfile> {
+class _UserProfileState extends State<UserProfile> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController(text: "Joel");
+  final TextEditingController lastNameController = TextEditingController(text: "Kupal");
+  final TextEditingController emailController = TextEditingController(text: "joelkupal@gmail.com");
+  final TextEditingController passwordController = TextEditingController(text: "kupal");
+  final TextEditingController confirmPasswordController = TextEditingController(text: "kupal");
   File? _profileImage;
 
-  // Dummy data for uploaded and rejected plants count
-  int uploadedPlantsCount = 42;
-  int rejectedPlantsCount = 5;
+  // Dummy data for plant requests count and user status
+  int requestedPlantsCount = 10;
+  bool isActive = true; // true for active, false for inactive
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -35,7 +35,7 @@ class _AdminProfileState extends State<AdminProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Profile'),
+        title: const Text('User Profile'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -61,11 +61,12 @@ class _AdminProfileState extends State<AdminProfile> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'My Profile',
+                      'User Profile',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20),
                     Stack(
+                      alignment: Alignment.center,
                       children: [
                         CircleAvatar(
                           radius: 60,
@@ -73,32 +74,25 @@ class _AdminProfileState extends State<AdminProfile> {
                               ? const AssetImage('assets/default_profile.png')
                               : FileImage(_profileImage!) as ImageProvider,
                         ),
+                        Positioned(
+                          bottom: -10,
+                          child: Text(
+                            isActive ? 'Active' : 'Inactive',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isActive ? Colors.green : Colors.red,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: _pickImage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.teal,
-                        side: const BorderSide(color: Colors.teal),
-                      ),
-                      child: const Text('Change Photo', style: TextStyle(color: Colors.teal)),
-                    ),
                     const SizedBox(height: 20),
-
-                    // Uploaded and Rejected Plants Caaaaaards
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildStatCard('Uploaded Plants', uploadedPlantsCount, Colors.green),
-                        _buildStatCard('Rejected Plants', rejectedPlantsCount, Colors.red),
-                      ],
-                    ),
-
+        
+                    // Plant Request Count Caaaaard
+                    _buildStatCard('Plant Requests', requestedPlantsCount, Colors.blue),
+        
                     const SizedBox(height: 20),
-
-                    // Edit Profile Section
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10.0),
@@ -109,7 +103,7 @@ class _AdminProfileState extends State<AdminProfile> {
                       child: Column(
                         children: [
                           const Text(
-                            'Edit Profile',
+                            'Profile',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -117,6 +111,7 @@ class _AdminProfileState extends State<AdminProfile> {
                             ),
                           ),
                           const SizedBox(height: 20),
+                          // Forms
                           Row(
                             children: [
                               Expanded(
@@ -128,7 +123,7 @@ class _AdminProfileState extends State<AdminProfile> {
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter your first name';
+                                      return 'Please enter first name';
                                     }
                                     return null;
                                   },
@@ -144,7 +139,7 @@ class _AdminProfileState extends State<AdminProfile> {
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter your last name';
+                                      return 'Please enter last name';
                                     }
                                     return null;
                                   },
@@ -161,57 +156,64 @@ class _AdminProfileState extends State<AdminProfile> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
+                                return 'Please enter email';
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
-                            controller: passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: confirmPasswordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Confirm password',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value != passwordController.text) {
-                                return 'Passwords do not match';
-                              }
-                              return null;
-                            },
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: passwordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter password';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: confirmPasswordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Confirm password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  validator: (value) {
+                                    if (value != passwordController.text) {
+                                      return 'Passwords do not match';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Edit Profile Button
+        
+                    // Remove Button
                     ElevatedButton(
                       onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Handle profile update logic
-                        }
+                        // Handle the remove user logic here
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                        backgroundColor: Colors.teal,
+                        backgroundColor: Colors.red,
                       ),
-                      child: const Text('Edit Profile', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      child: const Text('Remove', style: TextStyle(color: Colors.white, fontSize: 16)),
                     ),
                   ],
                 ),
@@ -229,7 +231,7 @@ class _AdminProfileState extends State<AdminProfile> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
-        width: 140,
+        width: 180,
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
